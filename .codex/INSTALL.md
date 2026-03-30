@@ -18,14 +18,18 @@ ln -s "$PWD" ~/.agents/skills/super-cower
 If you prefer not to use `rm -f`, manually remove the old symlink or directory
 first.
 
-## 3. Ensure multi-agent support is enabled
+## 3. Optional: enable multi-agent support
 
-Check `~/.codex/config.toml` and make sure it includes:
+`super-cower` works best when Codex subagents are enabled. Check
+`~/.codex/config.toml` and make sure it includes:
 
 ```toml
 [features]
 multi_agent = true
 ```
+
+If multi-agent support is unavailable, the workflow still falls back to inline
+execution. You do not need helper skills for that fallback.
 
 ## 4. Add one routing line to your global `AGENTS.md`
 
@@ -49,3 +53,7 @@ python3 scripts/validate_skills.py
 
 The first command should show a symlink pointing at this repository. The second
 command should report that the skill package is valid.
+
+For a quick behavioral smoke test after restart, ask Codex for a small software
+task and confirm it routes through `super-cower` without requiring helper skill
+names.

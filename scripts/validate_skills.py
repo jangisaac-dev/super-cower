@@ -15,6 +15,7 @@ REQUIRED_FILES = [
     ROOT / "README.md",
     ROOT / ".codex" / "INSTALL.md",
     ROOT / "agents" / "openai.yaml",
+    ROOT / "docs" / "super-cower" / "README.md",
     ROOT / "references" / "brainstorming.md",
     ROOT / "references" / "writing-plans.md",
     ROOT / "references" / "subagent-driven-development.md",
@@ -112,13 +113,16 @@ def validate_openai_yaml(errors: list[str]) -> None:
     text = read_text(ROOT / "agents" / "openai.yaml")
     required_lines = [
         'display_name: "Super Cower"',
-        'default_prompt: "Use $super-cower',
+        'default_prompt: "',
         "policy:",
         "allow_implicit_invocation: true",
     ]
     for line in required_lines:
         if line not in text:
             fail(f"agents/openai.yaml is missing: {line}", errors)
+
+    if "super-cower workflow" not in text:
+        fail("agents/openai.yaml should describe the super-cower workflow explicitly.", errors)
 
 
 def validate_install_doc(errors: list[str]) -> None:
@@ -137,10 +141,13 @@ def validate_install_doc(errors: list[str]) -> None:
 def validate_codex_tools(errors: list[str]) -> None:
     text = read_text(ROOT / "references" / "codex-tools.md")
     required_phrases = [
+        "multi_tool_use.parallel",
+        "update_plan",
         "spawn_agent",
         "send_input",
         "wait_agent",
         "close_agent",
+        "apply_patch",
         "fork_context=false",
     ]
     for phrase in required_phrases:
@@ -148,11 +155,77 @@ def validate_codex_tools(errors: list[str]) -> None:
             fail(f"references/codex-tools.md is missing: {phrase}", errors)
 
 
+def validate_brainstorming(errors: list[str]) -> None:
+    text = " ".join(read_text(ROOT / "references" / "brainstorming.md").lower().split())
+    required_phrases = [
+        "ask exactly one concrete clarifying question",
+        "one question per message",
+        "do not move to planning until at least one real clarifying question has been asked and answered",
+        "first substantive response must include the actual question",
+    ]
+    for phrase in required_phrases:
+        if phrase not in text:
+            fail(f"references/brainstorming.md is missing: {phrase}", errors)
+
+
+def validate_writing_plans(errors: list[str]) -> None:
+    text = read_text(ROOT / "references" / "writing-plans.md").lower()
+    required_phrases = [
+        "task id",
+        "acceptance criteria",
+        "out-of-scope",
+        "owned files",
+        "verification commands",
+        "parallel",
+    ]
+    for phrase in required_phrases:
+        if phrase not in text:
+            fail(f"references/writing-plans.md is missing: {phrase}", errors)
+
+
+def validate_tdd(errors: list[str]) -> None:
+    text = read_text(ROOT / "references" / "test-driven-development.md").lower()
+    required_phrases = [
+        "structural validation",
+        "validator",
+        "characterization",
+        "failing command",
+        "passing command",
+    ]
+    for phrase in required_phrases:
+        if phrase not in text:
+            fail(f"references/test-driven-development.md is missing: {phrase}", errors)
+
+
 def validate_agent_prompt(path: Path, tokens: list[str], errors: list[str]) -> None:
     text = read_text(path)
     for token in tokens:
         if token not in text:
             fail(f"{path} is missing token: {token}", errors)
+
+
+def validate_agent_templates(errors: list[str]) -> None:
+    implementer = read_text(ROOT / "references" / "agents" / "implementer.md")
+    for phrase in [
+        "Task ID:",
+        "Acceptance criteria:",
+        "Out of scope:",
+        "Owned files or write scope:",
+        "Verification commands:",
+    ]:
+        if phrase not in implementer:
+            fail(f"references/agents/implementer.md is missing: {phrase}", errors)
+
+    for reviewer_name in ["spec-reviewer.md", "code-quality-reviewer.md"]:
+        text = read_text(ROOT / "references" / "agents" / reviewer_name)
+        for phrase in [
+            "Task ID:",
+            "Acceptance criteria:",
+            "Key changed excerpts or file references:",
+            "Verification evidence:",
+        ]:
+            if phrase not in text:
+                fail(f"references/agents/{reviewer_name} is missing: {phrase}", errors)
 
 
 def main() -> int:
@@ -168,6 +241,9 @@ def main() -> int:
     validate_openai_yaml(errors)
     validate_install_doc(errors)
     validate_codex_tools(errors)
+    validate_brainstorming(errors)
+    validate_writing_plans(errors)
+    validate_tdd(errors)
     validate_agent_prompt(ROOT / "references" / "agents" / "implementer.md", IMPLEMENTER_TOKENS, errors)
     validate_agent_prompt(ROOT / "references" / "agents" / "spec-reviewer.md", REVIEWER_TOKENS, errors)
     validate_agent_prompt(
@@ -175,6 +251,7 @@ def main() -> int:
         REVIEWER_TOKENS,
         errors,
     )
+    validate_agent_templates(errors)
 
     if errors:
         for error in errors:

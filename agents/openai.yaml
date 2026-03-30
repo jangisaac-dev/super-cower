@@ -1,7 +1,7 @@
 interface:
   display_name: "Super Cower"
-  short_description: "Single-entry Codex software workflow"
-  default_prompt: "Use $super-cower to handle this software task end to end."
+  short_description: "Codex-native software workflow with subagent orchestration"
+  default_prompt: "Inspect the repo, clarify only if needed, plan explicitly for multi-step work, and finish this software task with the super-cower workflow."
 
 policy:
   allow_implicit_invocation: true
