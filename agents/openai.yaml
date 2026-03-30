@@ -1,0 +1,7 @@
+interface:
+  display_name: "Super Cower"
+  short_description: "Single-entry Codex software workflow"
+  default_prompt: "Use $super-cower to handle this software task end to end."
+
+policy:
+  allow_implicit_invocation: true
